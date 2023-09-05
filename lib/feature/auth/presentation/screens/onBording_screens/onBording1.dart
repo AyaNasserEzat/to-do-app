@@ -7,6 +7,8 @@ import 'package:todoapp/core/database/chach/chach_helper.dart';
 import 'package:todoapp/core/utiles/app_assets.dart';
 import 'package:todoapp/core/utiles/app_color.dart';
 import 'package:todoapp/core/utiles/app_string.dart';
+import 'package:todoapp/core/widgets/customButton.dart';
+import 'package:todoapp/core/widgets/custom_textButton.dart';
 import 'package:todoapp/feature/auth/data/model/onBordingModel.dart';
 
 import '../../../../../core/services/services_locator.dart';
@@ -36,15 +38,11 @@ class onBordingScreen extends StatelessWidget {
             return Column(mainAxisAlignment: MainAxisAlignment.center, children: [ Align(
             alignment: Alignment.topLeft,
             child:
-            indx!=2? TextButton(
-              onPressed: (){
+            indx!=2? 
+            CustomTextButton(onpressed:  (){
                 controller.jumpToPage(2);
-              },
-              child: Text(
-                AppString.skip,
-                style:Theme.of(context).textTheme.displaySmall,
-              ),
-            ):Container(),
+              }, text:  AppString.skip,)
+          :Container(),
           ),
           SizedBox(
             height: 40,
@@ -80,34 +78,25 @@ class onBordingScreen extends StatelessWidget {
           ),
           Row(
             children: [
-          indx!=0?     TextButton(
-                onPressed: () {
+          indx!=0?  
+          CustomTextButton(onpressed: () {
                   controller.previousPage(duration: Duration(microseconds: 100), curve: Curves.bounceIn);
-                },
-                child: Text(
-                  AppString.back,
-                  style: Theme.of(context).textTheme.displaySmall,
-                ),
-              ):Container(height: 10,),
+                }, text:   AppString.back,)
+         :Container(height: 10,),
               Spacer(),
-            indx!=2?  ElevatedButton(
-                onPressed: () {
+            indx!=2?  
+            CustomButton(onpressed:  () {
                   controller.nextPage(duration: Duration(microseconds: 1000), curve: Curves.bounceIn);
-                },
-                child: Text(AppString.next),
-                style: Theme.of(context).elevatedButtonTheme.style,
-                
-              ):ElevatedButton(
-                onPressed: ()async {
+                }, text: AppString.next)
+          :
+          CustomButton(onpressed:  ()async {
               await    sl<CacheHelper>().saveData(key:AppString.onBordingKey,value:true);
               print(await sl<CacheHelper>().getData(key:AppString.onBordingKey));
                   Navigator.push(context,MaterialPageRoute(builder: (context){
                     return HomeScreen();
                   }));
-                },
-                child: Text(AppString.getstart),
-                style: Theme.of(context).elevatedButtonTheme.style,
-              ),
+                }, text: AppString.getstart)
+         
             ],
           ),
         ],);
