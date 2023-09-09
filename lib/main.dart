@@ -12,7 +12,7 @@ void main() async {
   await sl<CacheHelper>().init();
   sl<SqfliteHelper>().intiDB();
   runApp(
-    BlocProvider(create: (context) => taskCubit()..getTasks(),
+    BlocProvider(create: (context) => taskCubit()..getTheme()..getTasks(),
     
      child: const MyApp()),
   );
