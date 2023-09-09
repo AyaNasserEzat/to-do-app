@@ -16,15 +16,16 @@ class splashScreen extends StatefulWidget {
 }
 
 class _splashScreenState extends State<splashScreen> {
+  @override
   void initState(){
     super.initState();
     navigate();
   }
   void navigate(){
-    Future.delayed(Duration(seconds: 3),(){
+    Future.delayed(const Duration(seconds: 3),(){
       bool isVisited=sl<CacheHelper>().getData(key: AppString.onBordingKey)??false;
       Navigator.push(context, MaterialPageRoute(builder: (context){
-        return isVisited? HomeScreen():onBordingScreen();
+        return isVisited? const HomeScreen():onBordingScreen();
       }));
     });
   }
@@ -35,7 +36,7 @@ class _splashScreenState extends State<splashScreen> {
       body: Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Image.asset(AppImage.logo),
-          Text(
+          const Text(
             AppString.logo,
             style: TextStyle(color: AppColor.withe),
           ),

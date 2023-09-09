@@ -1,23 +1,18 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:todoapp/core/utiles/app_color.dart';
 import 'package:todoapp/core/utiles/app_string.dart';
 import 'package:todoapp/core/widgets/customButton.dart';
 import 'package:todoapp/feature/task/presentation/component/addTask.dart';
+import 'package:todoapp/feature/task/presentation/cubit/taskCubit.dart';
+import 'package:todoapp/feature/task/presentation/cubit/taskeStase.dart';
 
-class AddTaskScreen extends StatefulWidget {
+import '../../../../core/commons/commons.dart';
+
+class AddTaskScreen extends StatelessWidget {
   const AddTaskScreen({super.key});
 
-  @override
-  State<AddTaskScreen> createState() => _AddTaskScreenState();
-}
-
-class _AddTaskScreenState extends State<AddTaskScreen> {
-  String startTime = DateFormat('hh:mm: a').format(DateTime.now());
-  String endTime = DateFormat('hh:mm: a').format(DateTime.now());
-  int currentIndx=0;
-  DateTime currentDate= DateTime.now();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,146 +28,177 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: Icon(Icons.arrow_back_ios_rounded)),
+            icon: const Icon(Icons.arrow_back_ios_rounded)),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            addTaskComponent(
-                hinttext: AppString.textTitleHint, text: AppString.title),
-            SizedBox(
-              height: 20,
-            ),
-            addTaskComponent(
-                hinttext: AppString.textnoteeHint, text: AppString.note),
-            SizedBox(
-              height: 20,
-            ),
-            addTaskComponent(
-              readOnly: true,
-              hinttext: DateFormat.yMd().format(currentDate),
-              text: 'Date',
-              sufix: IconButton(
-                onPressed: () async{
-         DateTime?     currentDatePicker= await  showDatePicker(
-                      context: context,
-                      initialDate:DateTime.now(),
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime(2025));
-                      if(currentDatePicker!=null){
-                        setState(() {
-                          currentDate=currentDatePicker;
-                        });
-                      }
-                },
-                icon: Icon(Icons.calendar_month_outlined),
-                color: AppColor.withe,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: BlocConsumer<taskCubit, taskState>(listener: (context, state) {
+            if (state is sucessInsertState) {
+                 showToast(
+                    message: 'Added Sucessfully', state: ToastStates.success);
+              Navigator.pop(context);
+            }
+          }, builder: (context, state) {
+            return Form(
+              key: BlocProvider.of<taskCubit>(context).formKey,
+              child: SizedBox(
+                height: 550,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    addTaskComponent(
+                        validator: (val) {
+                          if (val!.isEmpty) {
+                            return 'enter valid value';
+                          } else {
+                            return null;
+                          }
+                        },
+                        controller:
+                            BlocProvider.of<taskCubit>(context).titlecontroller,
+                        hinttext: AppString.textTitleHint,
+                        text: AppString.title),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    addTaskComponent(
+                        validator: (val) {
+                          if (val!.isEmpty) {
+                            return 'enter valid value';
+                          } else {
+                            return null;
+                          }
+                        },
+                        controller:
+                            BlocProvider.of<taskCubit>(context).notcontroller,
+                        hinttext: AppString.textnoteeHint,
+                        text: AppString.note),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    addTaskComponent(
+                      readOnly: true,
+                      hinttext: DateFormat.yMd().format(
+                          BlocProvider.of<taskCubit>(context).currentDate),
+                      text: 'Date',
+                      sufix: IconButton(
+                        onPressed: () async {
+                          BlocProvider.of<taskCubit>(context).getDate(context);
+                        },
+                        icon: const Icon(Icons.calendar_month_outlined),
+                        color: AppColor.withe,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(14.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: addTaskComponent(
+                              readOnly: true,
+                              hinttext:
+                                  BlocProvider.of<taskCubit>(context).startTime,
+                              text: AppString.startTime,
+                              sufix: IconButton(
+                                onPressed: () async {
+                                  BlocProvider.of<taskCubit>(context)
+                                      .getStartTime(context);
+                                },
+                                icon: const Icon(
+                                  Icons.timer_outlined,
+                                  color: AppColor.withe,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 25,
+                          ),
+                          Expanded(
+                            child: addTaskComponent(
+                              readOnly: true,
+                              hinttext:
+                                  BlocProvider.of<taskCubit>(context).endTime,
+                              text: 'end time',
+                              sufix: IconButton(
+                                onPressed: () async {
+                                  BlocProvider.of<taskCubit>(context)
+                                      .getEndTime(context);
+                                },
+                                icon: const Icon(
+                                  Icons.timer_outlined,
+                                  color: AppColor.withe,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: 6,
+                          itemBuilder: (context, indx) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: GestureDetector(
+                                onTap: () {
+                                  BlocProvider.of<taskCubit>(context)
+                                      .changeColorIndx(indx);
+                                },
+                                child: CircleAvatar(
+                                  backgroundColor:
+                                      BlocProvider.of<taskCubit>(context)
+                                          .getcolor(indx),
+                                  child: BlocProvider.of<taskCubit>(context)
+                                              .currentIndx ==
+                                          indx
+                                      ? const Icon(
+                                          Icons.check,
+                                          color: AppColor.withe,
+                                        )
+                                      : null,
+                                ),
+                              ),
+                            );
+                          }),
+                    ),
+                    const SizedBox(
+                      height: 25,
+                    ),
+                    State is loadingInsertState
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                            color: AppColor.primary,
+                          ))
+                        : SizedBox(
+                            height: 40,
+                            width: double.infinity,
+                            child: CustomButton(
+                                onpressed: () async {
+                                  if (BlocProvider.of<taskCubit>(context)
+                                      .formKey
+                                      .currentState!
+                                      .validate()) {
+                               BlocProvider.of<taskCubit>(context)
+                                        .insertTask();
+                                  }
+                                },
+                                text: 'creat Task'),
+                          ),
+                  ],
+                ),
               ),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: addTaskComponent(
-                    readOnly: true,
-                    hinttext: startTime,
-                    text: AppString.startTime,
-                    sufix: IconButton(
-                      onPressed: ()async {
-                  TimeOfDay?  startTimePicker=await  showTimePicker(
-                            context: context,
-                            initialTime:
-                                TimeOfDay.fromDateTime(DateTime.now()));
-                                if(startTimePicker!=null){
-                                  setState(() {
-                                    startTime=startTimePicker.format(context);
-                                  });
-                                }
-                      },
-                      icon: Icon(
-                        Icons.timer_outlined,
-                        color: AppColor.withe,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 25,
-                ),
-                Expanded(
-                  child: addTaskComponent(
-                    readOnly: true,
-                    hinttext: endTime,
-                    text: 'end time',
-                    sufix: IconButton(
-                      onPressed: () async {
-                        TimeOfDay? endTimePicker=await showTimePicker(
-                            context: context,
-                            initialTime:
-                                TimeOfDay.fromDateTime(DateTime.now()));
-                                 if(endTimePicker!=null){
-                                  setState(() {
-                                    endTime=endTimePicker.format(context);
-                                  });
-                                }
-                      },
-                      icon: Icon(
-                        Icons.timer_outlined,
-                        color: AppColor.withe,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 10,),
-            Expanded(
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 6,
-                itemBuilder: (context,indx){
-                  Color getcolor(int indx){
-                        switch(indx){
-                          case 0:return AppColor.red;
-                          case 1: return AppColor.green;
-                             case 2:return AppColor.bluegrey;
-                          case 3: return AppColor.blue;
-                            case 4:return AppColor.orange;
-                          case 5: return AppColor.purple;
-                          default:return AppColor.background;
-                        }
-                        }
-                  
-                return Padding(
-                  padding: const EdgeInsets.only(right :8.0),
-                  child: GestureDetector(
-                    onTap: (){
-                      setState(() {
-                        currentIndx=indx;
-                      });
-                    },
-                    child: CircleAvatar(
-                      backgroundColor: getcolor(indx),
-                      child:currentIndx==indx? Icon(Icons.check,color: AppColor.withe,):null,
-                    ),
-                  ),
-                );
-                
-  }),
-            ),
-            SizedBox(
-              height: 35,
-            ),
-            SizedBox(
-              height: 40,
-              width: double.infinity,
-              child: CustomButton(onpressed: () {}, text: 'creat Task'),
-            ),
-          ],
+            );
+          }),
         ),
       ),
     );
